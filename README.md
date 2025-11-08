@@ -106,18 +106,17 @@ MUSIC_DIR = Path("./music")
 
 ## 技术架构
 
-### 后端技术
-- **Flask**: Web应用框架
-- **qqmusic-api**: QQ音乐API封装
-- **aiohttp**: 异步HTTP客户端
-- **asyncio**: 异步编程支持
-
 ### 前端技术
 - **HTML5**: 页面结构
 - **CSS**: 样式设计
 - **JavaScript**: 交互逻辑
 - **响应式布局**: 移动端适配
 
+### 后端技术
+- **Flask**: Web应用框架
+- **qqmusic-api**: QQ音乐API封装
+- **aiohttp**: 异步HTTP客户端
+- **asyncio**: 异步编程支持
 
 ## 注意事项
 
