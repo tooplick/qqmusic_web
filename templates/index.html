@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ音乐下载器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="content-card">
+                <!-- 凭证提示 -->
+                {% if not has_credential %}
+                <div class="credential-notice">
+                    <div class="notice-icon">⚠️</div>
+                    <div class="quality-info">
+                        <div class="notice-title">没有检测到凭证</div>
+                        <div class="notice-desc">请联系管理员获取凭证文件</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 搜索区域 -->
+                <div class="search-section">
+                    <h1 class="search-title">搜索并下载音乐</h1>
+                    <p class="search-subtitle">输入歌曲名、歌手或专辑名称开始搜索</p>
+
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="search-input" placeholder="搜索歌曲...">
+                        <button class="search-btn" id="search-btn">
+                            <span class="btn-text">搜索</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner"></span>
+                                搜索中
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 音质选择 -->
+                <div class="quality-section">
+                    <div class="section-title">音质选择</div>
+                    <div class="quality-options">
+                        <div class="quality-option" data-quality="standard">
+                            <div class="quality-icon">
+                                <img src="{{ url_for('static', filename='images/mp3_icon.png') }}" alt="MP3" class="format-icon">
+                            </div>
+                            <div class="quality-info">
+                                <div class="quality-name">标准音质</div>
+                                <div class="quality-desc">MP3优先，文件较小</div>
+                            </div>
+                        </div>
+                        <div class="quality-option selected" data-quality="high">
+                            <div class="quality-icon">
+                                <img src="{{ url_for('static', filename='images/flac_icon.gif') }}" alt="FLAC" class="format-icon">
+                            </div>
+                            <div class="quality-info">
+                                <div class="quality-name">高品质音质</div>
+                                <div class="quality-desc">FLAC优先，音质最佳</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索结果 -->
+                <div class="results-section">
+                    <div class="section-header">
+                        <div class="results-title-container">
+                            <h2 class="section-title" id="results-title">搜索结果</h2>
+                            <div class="results-status" id="results-status"></div>
+                        </div>
+                        <div class="results-count" id="results-count"></div>
+                    </div>
+
+                    <div class="results-container" id="results">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <div class="empty-title">开始搜索音乐</div>
+                            <div class="empty-desc">在搜索框中输入歌曲名开始搜索</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-text">© 2025 QQ音乐下载 · 仅供学习使用</div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
