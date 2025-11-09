@@ -77,11 +77,12 @@ if docker-compose ps | grep -q "Up"; then
     echo "访问地址: http://localhost:6022"
     echo "项目目录: $PROJECT_DIR"
     echo ""
+    cd $PROJECT_DIR/docker
     echo "管理命令:"
-    echo "   查看日志: cd $PROJECT_DIR/docker && docker-compose logs -f"
-    echo "   停止服务: cd $PROJECT_DIR/docker && docker-compose down"
-    echo "   重启服务: cd $PROJECT_DIR/docker && docker-compose restart"
-    echo "   更新服务: cd $PROJECT_DIR && git pull && cd docker && docker-compose up -d --build"
+    echo "   查看日志:sudo docker-compose logs -f"
+    echo "   停止服务:sudo docker-compose down"
+    echo "   重启服务:sudo docker-compose restart"
+    echo "   更新服务:sudo docker-compose up -d --build"
 else
     echo "服务启动失败，请检查日志:"
     docker-compose logs
