@@ -59,6 +59,8 @@ qqmusic_web/
 4. **访问应用**
    打开浏览器访问 `http://localhost:5000`
 
+### 示例网站：[qq.ygking.top](https://qq.ygking.top/)
+
 ## API接口
 
 ### 搜索接口
