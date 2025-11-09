@@ -7,7 +7,7 @@
 ###  核心功能
 - **音乐搜索**: 支持按歌曲名、歌手、专辑搜索
 - **多音质下载**: 支持标准音质(MP3)和高品质音质(FLAC)
-- **自动清理**: 定期清理下载文件，节省存储空间
+- **自动清理**: 自动清理下载文件，节省存储空间
 
 ###  凭证管理
 - **自动刷新**: 支持凭证自动刷新功能
@@ -18,7 +18,7 @@
 ```
 qqmusic_web/
 ├── app.py                 # Flask Web服务器
-├── requirements.txt       # Python 依赖列表
+├── requirements.txt       # Python 依赖项
 ├── qqmusic_cred.pkl       # QQ音乐凭证文件
 ├── music/                 # 音乐文件存储目录
 ├── static/             
@@ -62,7 +62,7 @@ sudo -E bash -c "$(curl -fsSL https://raw.githubusercontent.com/tooplick/qqmusic
    ```
 
 4. **访问应用**
-   打开浏览器访问 `http://localhost:5000`
+   打开浏览器访问 `http://localhost:6022`
 
 ### 示例网站：[qq.ygking.top](https://qq.ygking.top/)
 
@@ -120,11 +120,6 @@ MUSIC_DIR = Path("./music")
 - 本工具仅供学习和研究使用
 - 请尊重音乐版权，下载后请在24小时内删除
 - 不得用于商业用途
-
-### 使用限制
-- VIP歌曲下载需要有效凭证
-- 音质可用性受歌曲版权限制
-- 下载速度受网络环境影响
 
 ## 警告
 - 这是一个开发服务器。请勿将其用于生产环境部署。请改用生产环境的 WSGI 服务器。
