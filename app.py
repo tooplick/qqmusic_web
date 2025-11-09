@@ -4,6 +4,7 @@ from pathlib import Path
 from qqmusic_api import search
 from qqmusic_api.song import get_song_urls, SongFileType
 from qqmusic_api.login import Credential, check_expired
+from qqmusic_api.lyric import get_lyric
 import aiohttp
 from flask import Flask, request, jsonify, send_file, render_template
 import os
@@ -13,7 +14,8 @@ import time
 import shutil
 from datetime import datetime, timedelta
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
+from mutagen.flac import FLAC, Picture
 
 # 配置日志
 logging.basicConfig(
@@ -30,7 +32,64 @@ MUSIC_DIR.mkdir(exist_ok=True)
 # 配置常量
 CLEANUP_INTERVAL = 10  # 清理间隔(秒)
 CREDENTIAL_CHECK_INTERVAL = 10  # 凭证检查间隔(秒)
-MAX_FILENAME_LENGTH = 100  # 最大文件名长度
+MAX_FILENAME_LENGTH = 100  #
+cover_size = 800 #封面尺寸
+
+
+def get_cover(mid: str, size: Literal[150, 300, 500, 800] = 300) -> str:
+
+    if size not in [150, 300, 500, 800]:
+        raise ValueError("not supported size")
+    return f"https://y.gtimg.cn/music/photo_new/T002R{size}x{size}M000{mid}.jpg"
+
+
+async def add_metadata_to_flac(file_path: Path, song_info: dict, cover_url: str = None, lyrics_data: dict = None):
+    """为FLAC文件添加封面和歌词"""
+    try:
+        audio = FLAC(file_path)
+
+        # 添加基本元数据
+        audio['title'] = song_info.get('name', '')
+        audio['artist'] = song_info.get('singers', '')
+        audio['album'] = song_info.get('album', '')
+
+        # 添加封面
+        if cover_url:
+            cover_data = await download_file_content(cover_url)
+            if cover_data and len(cover_data) > 1024:  # 确保不是空图片
+                image = Picture()
+                image.type = 3  # 封面图片
+                # 根据URL判断MIME类型
+                if cover_url.lower().endswith('.png'):
+                    image.mime = 'image/png'
+                else:
+                    image.mime = 'image/jpeg'
+                image.desc = 'Cover'
+                image.data = cover_data
+
+                audio.clear_pictures()
+                audio.add_picture(image)
+                logger.info(f"已添加封面到 {file_path.name}")
+
+        # 添加歌词
+        if lyrics_data:
+            lyric_text = lyrics_data.get('lyric', '')
+            if lyric_text:
+                audio['lyrics'] = lyric_text
+                logger.info(f"已添加歌词到 {file_path.name}")
+
+            # 添加翻译歌词（如果有）
+            trans_text = lyrics_data.get('trans', '')
+            if trans_text:
+                audio['translyrics'] = trans_text
+
+        audio.save()
+        logger.info(f"已为 {file_path.name} 添加元数据")
+        return True
+
+    except Exception as e:
+        logger.error(f"添加元数据失败: {e}")
+        return False
 
 
 class CredentialManager:
@@ -160,7 +219,7 @@ class CredentialManager:
             else:
                 self.status["status"] = "凭证状态正常"
                 self.status["expired"] = False
-                logger.debug("凭证状态正常")
+                logger.info("凭证状态正常")
 
         except Exception as e:
             logger.error(f"检查凭证时出错: {e}")
@@ -337,13 +396,17 @@ def api_search():
             name = song.get("title", "")
             singers = ", ".join([s.get("name", "") for s in song.get("singer", [])])
             vip_flag = song.get("pay", {}).get("pay_play", 0) != 0
+            album_info = song.get("album", {})
+            album_name = album_info.get("name", "")
+            album_mid = album_info.get("mid", "")
 
             formatted_results.append({
                 'mid': song.get('mid', ''),
                 'name': name,
                 'singers': singers,
                 'vip': vip_flag,
-                'album': song.get('album', {}).get('name', ''),
+                'album': album_name,
+                'album_mid': album_mid,  # 添加专辑mid用于获取封面
                 'interval': song.get('interval', 0)
             })
 
@@ -360,6 +423,7 @@ def api_download():
     data = request.get_json(silent=True) or {}
     song_data = data.get('song_data')
     prefer_flac = data.get('prefer_flac', False)
+    add_metadata = data.get('add_metadata', True)  # 默认添加元数据
 
     if not song_data:
         return jsonify({'error': '缺少歌曲数据'}), 400
@@ -368,6 +432,7 @@ def api_download():
         song_info = song_data
         mid = song_info.get('mid')
         vip = song_info.get('vip', False)
+        album_mid = song_info.get('album_mid', '')
 
         if not mid:
             return jsonify({'error': '无效的歌曲ID'}), 400
@@ -393,6 +458,7 @@ def api_download():
 
         safe_filename = sanitize_filename(f"{song_name}-{singer_name}")
         download_info = {}
+        downloaded_file_type = None
 
         # 尝试不同音质
         for file_type, quality_name in quality_order:
@@ -406,6 +472,7 @@ def api_download():
                     'filepath': str(filepath),
                     'cached': True
                 }
+                downloaded_file_type = file_type
                 logger.info(f"使用缓存文件: {filepath.name}")
                 break
 
@@ -435,9 +502,42 @@ def api_download():
                     'filepath': str(filepath),
                     'cached': False
                 }
+                downloaded_file_type = file_type
                 break
             else:
                 logger.warning(f"{quality_name} 下载失败")
+
+        # 为FLAC文件添加元数据
+        if (download_info and not download_info.get('cached', False) and
+                add_metadata and downloaded_file_type == SongFileType.FLAC):
+            try:
+                # 获取封面URL
+                cover_url = None
+                if album_mid:
+                    cover_url = get_cover(album_mid, {cover_size})  # 使用500px大小的封面
+
+                # 获取歌词
+                lyrics_data = None
+                try:
+                    lyrics_data = run_async(get_lyric(mid))
+                except Exception as e:
+                    logger.warning(f"获取歌词失败: {e}")
+
+                # 添加元数据到FLAC文件
+                if cover_url or lyrics_data:
+                    metadata_success = run_async(add_metadata_to_flac(
+                        Path(download_info['filepath']),
+                        song_info,
+                        cover_url,
+                        lyrics_data
+                    ))
+                    download_info['metadata_added'] = metadata_success
+                else:
+                    download_info['metadata_added'] = False
+
+            except Exception as e:
+                logger.error(f"添加元数据失败: {e}")
+                download_info['metadata_added'] = False
 
         if download_info:
             return jsonify(download_info)
