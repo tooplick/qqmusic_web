@@ -1,16 +1,15 @@
-version: '3.8'
-
 services:
   qqmusic-web:
     build:
-      context: .
-      dockerfile: ./docker/dockerfile
+      context: ..
+      dockerfile: docker/dockerfile
     ports:
       - "6022:6022"
     volumes:
-      - .:/app  
+      - ..:/app  
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
     stdin_open: true
     tty: true
+    restart: unless-stopped

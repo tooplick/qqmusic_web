@@ -1,10 +1,9 @@
 #!/bin/bash
-# QQMusic Web 一键部署脚本
+# QQMusic Web 一键安装脚本
 
 set -e
 
-echo "🚀 开始部署 QQMusic Web..."
-echo "📁 项目地址: https://github.com/tooplick/qqmusic_web"
+echo "🚀 开始安装 QQMusic Web..."
 
 # 检查是否以 root 权限运行
 if [ "$EUID" -ne 0 ]; then
@@ -18,6 +17,7 @@ if ! command -v docker &> /dev/null; then
     curl -fsSL https://get.docker.com | sh
     systemctl enable docker
     systemctl start docker
+    echo "✅ Docker 安装完成"
 fi
 
 # 检查 Docker Compose 是否安装
@@ -25,6 +25,7 @@ if ! command -v docker-compose &> /dev/null; then
     echo "📦 安装 Docker Compose..."
     curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
+    echo "✅ Docker Compose 安装完成"
 fi
 
 # 创建项目目录
@@ -42,7 +43,9 @@ else
     git clone https://github.com/tooplick/qqmusic_web.git .
 fi
 
-# 检查必要的文件
+echo "✅ 项目文件下载完成"
+
+# 检查 Docker 配置文件是否存在
 if [ ! -f "docker/dockerfile" ]; then
     echo "❌ 错误: 未找到 docker/dockerfile"
     exit 1
@@ -53,13 +56,11 @@ if [ ! -f "docker/docker-compose.yml" ]; then
     exit 1
 fi
 
+echo "🐳 使用项目自带的 Docker 配置..."
 
-# 使用项目自带的 docker-compose 配置
-echo "📋 使用项目自带的 Docker 配置..."
+# 进入 docker 目录并启动服务
 cd docker
-
-# 构建并启动服务
-echo "🔨 构建并启动容器..."
+echo "🔨 构建并启动 Docker 容器..."
 docker-compose up -d --build
 
 # 等待服务启动
@@ -68,9 +69,9 @@ sleep 15
 
 # 检查服务状态
 if docker-compose ps | grep -q "Up"; then
-    echo "🎉 QQMusic Web 部署成功！"
+    echo "🎉 QQMusic Web 安装成功！"
     echo ""
-    echo "🌐 访问地址: http://$(curl -s ifconfig.me):6022"
+    echo "🌐 访问地址: http://localhost:6022"
     echo "📁 项目目录: $PROJECT_DIR"
     echo ""
     echo "🔧 管理命令:"
