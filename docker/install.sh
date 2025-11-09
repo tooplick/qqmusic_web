@@ -61,10 +61,24 @@ fi
 
 echo "使用项目自带的 Docker 配置..."
 
-# 进入 docker 目录并启动服务
+# 进入 docker 目录
 cd docker
-echo "构建并启动 Docker 容器..."
-docker-compose up -d --build
+
+# 停止并删除现有容器
+echo "停止并删除现有容器..."
+docker-compose down 2>/dev/null || true
+
+# 获取镜像名称并删除旧镜像
+echo "检查并删除旧镜像..."
+IMAGE_NAME=$(grep "image:" docker-compose.yml | awk '{print $2}' | head -1)
+if [ -n "$IMAGE_NAME" ] && docker image inspect "$IMAGE_NAME" &>/dev/null; then
+    echo "删除旧镜像: $IMAGE_NAME"
+    docker rmi "$IMAGE_NAME" 2>/dev/null || true
+fi
+
+# 构建并启动新容器
+echo "构建并启动新的 Docker 容器..."
+docker-compose up -d --build --force-recreate
 
 # 等待服务启动
 echo "等待服务启动..."
@@ -99,7 +113,7 @@ if docker-compose ps | grep -q "Up"; then
     echo "   查看日志: cd $PROJECT_DIR/docker && sudo docker-compose logs -f"
     echo "   停止服务: cd $PROJECT_DIR/docker && sudo docker-compose down"
     echo "   重启服务: cd $PROJECT_DIR/docker && sudo docker-compose restart"
-    echo "   更新服务: cd $PROJECT_DIR/docker && sudo docker-compose up -d --build"
+    echo "   更新服务: cd $PROJECT_DIR/docker && sudo docker-compose up -d --build --force-recreate"
 else
     echo "服务启动失败，请检查日志:"
     cd $PROJECT_DIR/docker && docker-compose logs
