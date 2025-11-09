@@ -34,11 +34,13 @@ qqmusic_web/
 
 ## 安装部署
 
-### 环境要求
-- Python 3.7+
-- pip 包管理工具
+### Docker一键部署(推荐)
+```
+#!/bin/bash
+sudo -E bash -c "$(curl -fsSL https://raw.githubusercontent.com/tooplick/qqmusic_web/refs/heads/main/docker/install.sh)"
+```
 
-### 安装步骤
+### Python 3.11+
 
 1. **克隆项目**
    ```bash
