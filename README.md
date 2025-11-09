@@ -97,6 +97,9 @@ CREDENTIAL_CHECK_INTERVAL = 10
 # 最大文件名长度
 MAX_FILENAME_LENGTH = 100
 
+#封面尺寸[150, 300, 500, 800]
+cover_size = 800
+
 # 音乐文件存储目录
 MUSIC_DIR = Path("./music")
 ```
