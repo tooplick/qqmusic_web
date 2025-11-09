@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: docker/dockerfile
+    image: qqmusic_web:latest
+    container_name: qqmusic_web
     ports:
       - "6022:6022"
     volumes:
