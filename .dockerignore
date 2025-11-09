@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.git/
+.gitignore
+.DS_Store
+*.log
+music/*.mp3
+music/*.flac

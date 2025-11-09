@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  qqmusic-web:
+    build: .
+    ports:
+      - "6022:6022"
+    volumes:
+      - .:/app  
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    stdin_open: true
+    tty: true

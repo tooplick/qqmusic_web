@@ -697,7 +697,7 @@ def init_app():
 if __name__ == '__main__':
     try:
         init_app()
-        app.run(debug=False, host='0.0.0.0', port=5000, use_reloader=False)
+        app.run(debug=False, host='0.0.0.0', port=6022, use_reloader=False)
     except KeyboardInterrupt:
         logger.info("接收到中断信号，正在停止...")
     except Exception as e:
