@@ -33,11 +33,6 @@ qqmusic_web/
 ```
 
 ## 安装部署
-### Docker
-```bash
-#!bin/bash
-sudo -E bash -c "$(curl -fsSL https://raw.githubusercontent.com/tooplick/qqmusic_web/refs/heads/main/docker/install.sh)"
-```
 
 ### 环境要求
 - Python 3.7+

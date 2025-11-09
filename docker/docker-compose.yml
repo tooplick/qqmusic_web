@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   qqmusic-web:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/dockerfile
     ports:
       - "6022:6022"
     volumes:
