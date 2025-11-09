@@ -4,7 +4,7 @@ services:
   qqmusic-web:
     build:
       context: .
-      dockerfile: docker/dockerfile
+      dockerfile: ./docker/dockerfile
     ports:
       - "6022:6022"
     volumes:
