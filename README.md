@@ -17,22 +17,22 @@
 
 ```
 qqmusic_web/
-├── app.py                 # Flask Web服务器
-├── requirements.txt       # Python 依赖项
-├── qqmusic_cred.pkl       # QQ音乐凭证文件
-├── music/                 # 音乐文件存储目录
+├── app.py                    # Flask Web服务器
+├── requirements.txt          # Python 依赖项
+├── qqmusic_cred.pkl          # QQ音乐凭证文件
+├── music/                    # 音乐文件存储目录
 ├── static/             
 │   ├── css/s
-│   │    └── style.css     # 样式文件
+│   │    └── style.css        # 样式文件
 │   ├── js/
-│   │    └── script.js     # 前端交互脚本
+│   │    └── script.js        # 前端交互脚本
 │   └── images/ 
 ├── templates/         
-│   └── index.html         # 主页
+│   └── index.html            # 主页
 └── docker/             
-    ├── dockerfile         # Docker 镜像构建文件
-    ├── docker-compose.yml # 容器编排配置
-    └── install.sh         # 安装脚本
+    ├── dockerfile            # Docker 镜像构建文件
+    ├── docker-compose.yml    # 容器编排配置
+    └── install.sh            # 安装脚本
 ```
 
 ## 安装部署
