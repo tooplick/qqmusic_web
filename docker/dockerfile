@@ -1,4 +1,4 @@
-FROM registry.cn-hangzhou.aliyuncs.com/google_containers/python:3.11-slim
+FROM docker.xuanyuan.run/library/python:3.11.14-trixie
 
 WORKDIR /app
 
