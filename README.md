@@ -39,13 +39,13 @@ qqmusic_web/
 
 ### Docker 一键部署(推荐)
 ```
-#!/bin/bash
+#（Github）
 sudo -E bash -c "$(curl -fsSL https://raw.githubusercontent.com/tooplick/qqmusic_web/refs/heads/main/docker/install.sh)"
 ```
-### 国内加速 ###
+**如果从 Github 下载脚本遇到网络问题，可以使用gitee仓库**
 ```
-#!/bin/bash
-sudo -E bash -c "$(curl -fsSL https://raw.bgithub.xyz/tooplick/qqmusic_web/refs/heads/main/docker/install.sh)"
+#（Gitee）
+sudo -E bash -c "$(curl -fsSL https://gitee.com/tooplick/qqmusic_web/raw/main/docker/giteeinstall.sh)"
 ```
 ### Python 3.11+
 
