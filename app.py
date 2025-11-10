@@ -542,7 +542,7 @@ def api_download():
                 (SongFileType.MP3_128, "128kbps")
             ]
 
-        safe_filename = sanitize_filename(f"{song_name}-{singer_name}")
+        safe_filename = sanitize_filename(f"{song_name} - {singer_name}")
         download_info = {}
         downloaded_file_type = None
 
