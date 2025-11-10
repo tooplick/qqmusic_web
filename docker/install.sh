@@ -13,50 +13,11 @@ fi
 
 # 检查 Docker 是否安装
 if ! command -v docker &> /dev/null; then
-    echo "Docker 未安装，开始安装 Docker..."
+    echo "安装 Docker..."
     curl -fsSL https://get.docker.com | sh
     systemctl enable docker
     systemctl start docker
     echo "Docker 安装完成"
-else
-    echo "Docker 已安装，版本: $(docker --version)"
-fi
-
-# 询问用户是否配置 Docker 国内镜像源
-echo ""
-read -p "是否配置 Docker 国内镜像源(y/n，默认y): " configure_mirror
-configure_mirror=${configure_mirror:-y}
-
-if [ "$configure_mirror" = "y" ] || [ "$configure_mirror" = "Y" ]; then
-    echo "配置 Docker 国内镜像源..."
-    
-    # 创建新配置
-    mkdir -p /etc/docker
-    tee /etc/docker/daemon.json > /dev/null <<EOF
-{
-  "registry-mirrors": [
-    "https://hub-mirror.c.163.com",
-    "https://docker.mirrors.ustc.edu.cn",
-    "https://mirror.baidubce.com",
-    "https://docker.nju.edu.cn"
-  ],
-  "max-concurrent-downloads": 10,
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m",
-    "max-file": "3"
-  }
-}
-EOF
-    systemctl daemon-reload
-    systemctl restart docker
-    echo "Docker 镜像源配置完成，已启用以下镜像源："
-    echo "  - 网易镜像源: https://hub-mirror.c.163.com"
-    echo "  - 中科大镜像源: https://docker.mirrors.ustc.edu.cn"
-    echo "  - 百度云镜像源: https://mirror.baidubce.com"
-    echo "  - 南京大学镜像源: https://docker.nju.edu.cn"
-else
-    echo "跳过 Docker 镜像源配置"
 fi
 
 # 检查 Docker Compose 是否安装
@@ -64,67 +25,22 @@ if ! command -v docker-compose &> /dev/null; then
     echo "安装 Docker Compose..."
     curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
-    
-    # 创建软链接（兼容性）
-    if [ ! -f /usr/bin/docker-compose ]; then
-        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-    fi
     echo "Docker Compose 安装完成"
-else
-    echo "Docker Compose 已安装，版本: $(docker-compose --version)"
 fi
 
 # 创建项目目录
 PROJECT_DIR="/opt/qqmusic-web"
 echo "创建项目目录: $PROJECT_DIR"
+mkdir -p $PROJECT_DIR
+cd $PROJECT_DIR
 
 # 下载项目文件
 echo "下载项目文件..."
-if command -v git &> /dev/null; then
-    echo "使用 git 下载项目..."
-    if [ -d "$PROJECT_DIR/.git" ]; then
-        echo "项目已存在，更新到最新版本..."
-        cd $PROJECT_DIR
-        git pull origin main
-    else
-        rm -rf $PROJECT_DIR
-        mkdir -p $PROJECT_DIR
-        cd $PROJECT_DIR
-        git clone https://github.com/tooplick/qqmusic_web.git .
-    fi
+if [ -d ".git" ]; then
+    echo "项目已存在，更新到最新版本..."
+    git pull origin main
 else
-    echo "git 未安装，使用 wget 下载项目..."
-    # 删除旧目录并重新创建
-    rm -rf $PROJECT_DIR
-    mkdir -p $PROJECT_DIR
-    cd $PROJECT_DIR
-    
-    # 使用 wget 下载 GitHub 仓库的 ZIP 文件
-    wget -O qqmusic_web.zip https://github.com/tooplick/qqmusic_web/archive/refs/heads/main.zip
-    
-    # 检查是否安装了 unzip
-    if ! command -v unzip &> /dev/null; then
-        echo "安装 unzip..."
-        if command -v apt &> /dev/null; then
-            apt update && apt install -y unzip
-        elif command -v yum &> /dev/null; then
-            yum install -y unzip
-        else
-            echo "错误: 无法安装 unzip，请手动安装后重新运行脚本"
-            exit 1
-        fi
-    fi
-    
-    # 解压文件
-    echo "解压项目文件..."
-    unzip -q qqmusic_web.zip
-    
-    # 移动文件到当前目录
-    mv qqmusic_web-main/* .
-    mv qqmusic_web-main/.* . 2>/dev/null || true
-    
-    # 清理临时文件
-    rm -rf qqmusic_web-main qqmusic_web.zip
+    git clone https://github.com/tooplick/qqmusic_web.git .
 fi
 
 echo "项目文件下载完成"
