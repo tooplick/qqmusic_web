@@ -45,9 +45,6 @@ fi
 
 echo "项目文件下载完成"
 
-echo "如需修改配置，请编辑/opt/qqmusic-web/app.py"
-read -p "按回车键继续..."
-
 # 检查 Docker 配置文件是否存在
 if [ ! -f "docker/dockerfile" ]; then
     echo "错误: 未找到 docker/dockerfile"
@@ -59,7 +56,7 @@ if [ ! -f "docker/docker-compose.yml" ]; then
     exit 1
 fi
 
-echo "使用项目自带的 Docker 配置..."
+echo "使用 docker-compose.yml 配置..."
 
 # 进入 docker 目录
 cd docker
