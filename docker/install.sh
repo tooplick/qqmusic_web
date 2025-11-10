@@ -28,6 +28,33 @@ if ! command -v docker-compose &> /dev/null; then
     echo "Docker Compose 安装完成"
 fi
 
+    # 询问用户是否配置国内镜像源
+    read -p "是否配置 Docker 国内镜像源？(y/n，默认y): " configure_mirror
+    configure_mirror=${configure_mirror:-y}
+    if [ "$configure_mirror" = "y" ] || [ "$configure_mirror" = "Y" ]; then
+        echo "配置 Docker 国内镜像源..."
+        mkdir -p /etc/docker
+        tee /etc/docker/daemon.json > /dev/null <<EOF
+{
+  "registry-mirrors": [
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com",
+    "https://docker.nju.edu.cn"
+  ],
+  "max-concurrent-downloads": 10,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+EOF
+        systemctl daemon-reload
+        systemctl restart docker
+        echo "Docker 镜像源配置完成"
+    fi
+
 # 创建项目目录
 PROJECT_DIR="/opt/qqmusic-web"
 echo "创建项目目录: $PROJECT_DIR"
