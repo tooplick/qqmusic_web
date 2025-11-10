@@ -93,8 +93,8 @@ echo "使用docker-compose.yml配置..."
 # 进入 docker 目录
 cd docker
 
-# 停止并删除现有容器
-echo "停止并删除现有容器..."
+# 删除现有容器
+echo "删除现有容器..."
 docker-compose down 2>/dev/null || true
 
 # 获取镜像名称并删除旧镜像
