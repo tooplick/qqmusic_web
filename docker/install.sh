@@ -11,23 +11,6 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# 检查 Docker 是否安装
-if ! command -v docker &> /dev/null; then
-    echo "安装 Docker..."
-    curl -fsSL https://get.docker.com | sh
-    systemctl enable docker
-    systemctl start docker
-    echo "Docker 安装完成"
-fi
-
-# 检查 Docker Compose 是否安装
-if ! command -v docker-compose &> /dev/null; then
-    echo "安装 Docker Compose..."
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    echo "Docker Compose 安装完成"
-fi
-
 # 创建项目目录
 PROJECT_DIR="/opt/qqmusic-web"
 echo "创建项目目录: $PROJECT_DIR"
@@ -44,6 +27,60 @@ else
 fi
 
 echo "项目文件下载完成"
+
+# 检测是否在中国地区
+echo "检测网络环境..."
+# 方法1: 检查IP地理位置
+IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/")
+if echo "$IP_INFO" | grep -q "\"country\":\"China\""; then
+    IS_CHINA=true
+else
+    # 方法2: 检查特定中国网站的可访问性
+    if curl -s --connect-timeout 5 "https://www.baidu.com" > /dev/null && \
+       ! curl -s --connect-timeout 5 "https://www.google.com" > /dev/null 2>&1; then
+        IS_CHINA=true
+    else
+        IS_CHINA=false
+    fi
+fi
+
+if [ "$IS_CHINA" = true ]; then
+    echo "检测到中国地区网络环境，修改 Dockerfile 使用国内镜像源"
+    
+    # 备份原始 Dockerfile
+    if [ -f "docker/dockerfile" ]; then
+        cp docker/dockerfile docker/dockerfile.backup
+    fi
+    
+    # 修改 Dockerfile 使用国内镜像
+    sed -i 's|FROM python:3.11-slim|FROM docker.1ms.run/library/python:3.11-slim|' docker/dockerfile
+    
+    # 在安装系统依赖前添加 pip 镜像源配置
+    sed -i '/RUN apt-get update && apt-get install -y/a\
+# 设置 pip 使用国内镜像源\
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple' docker/dockerfile
+    
+    echo "Dockerfile 已修改为使用国内镜像源"
+else
+    echo "使用默认官方镜像源"
+fi
+
+# 检查 Docker 是否安装
+if ! command -v docker &> /dev/null; then
+    echo "安装 Docker..."
+    curl -fsSL https://get.docker.com | sh
+    systemctl enable docker
+    systemctl start docker
+    echo "Docker 安装完成"
+fi
+
+# 检查 Docker Compose 是否安装
+if ! command -v docker-compose &> /dev/null; then
+    echo "安装 Docker Compose..."
+    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+    echo "Docker Compose 安装完成"
+fi
 
 # 检查 Docker 配置文件是否存在
 if [ ! -f "docker/dockerfile" ]; then
