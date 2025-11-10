@@ -12,8 +12,6 @@ services:
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
-      - LANG=zh_CN.UTF-8
-      - LC_ALL=zh_CN.UTF-8
     stdin_open: true
     tty: true
     restart: unless-stopped

@@ -79,7 +79,7 @@ docker-compose up -d --build --force-recreate
 
 # 等待服务启动
 echo "等待服务启动..."
-sleep 5
+sleep 2
 
 # 检查服务状态
 if docker-compose ps | grep -q "Up"; then
