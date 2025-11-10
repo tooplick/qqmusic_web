@@ -31,12 +31,12 @@ echo "项目文件下载完成"
 # 检测是否在中国地区
 echo "检测网络环境..."
 # 方法1: 检查IP地理位置
-IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/" 2>/dev/null || echo "")
+IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/")
 if echo "$IP_INFO" | grep -q "\"country\":\"China\""; then
     IS_CHINA=true
 else
     # 方法2: 检查特定中国网站的可访问性
-    if curl -s --connect-timeout 5 "https://www.baidu.com" > /dev/null 2>&1 && \
+    if curl -s --connect-timeout 5 "https://www.baidu.com" > /dev/null && \
        ! curl -s --connect-timeout 5 "https://www.google.com" > /dev/null 2>&1; then
         IS_CHINA=true
     else
@@ -52,36 +52,8 @@ if [ "$IS_CHINA" = true ]; then
         cp docker/dockerfile docker/dockerfile.backup
     fi
     
-    # 重新创建完整的 Dockerfile
-    cat > docker/dockerfile << 'EOF'
-FROM docker.1ms.run/library/python:3.11-slim
-
-WORKDIR /app
-
-# 设置 pip 使用国内镜像源
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 复制依赖文件
-COPY requirements.txt .
-
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 复制应用文件
-COPY . .
-
-# 暴露端口
-EXPOSE 6022
-
-# 启动应用
-CMD ["python", "app.py"]
-EOF
+    # 修改 Dockerfile 使用国内镜像
+    sed -i 's|FROM python:3.11-slim|FROM docker.1ms.run/library/python:3.11-slim|' docker/dockerfile
     
     echo "Dockerfile 已修改为使用国内镜像源"
 else
