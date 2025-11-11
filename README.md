@@ -19,6 +19,8 @@
 qqmusic_web/
 ├── app.py                       # Flask Web服务器
 ├── requirements.txt             # Python 依赖项
+├── poetry.lock                  
+├── pyproject.toml               
 ├── qqmusic_cred.pkl             # 凭证文件
 ├── music/                       # 音乐文件存储目录
 ├── static/             
