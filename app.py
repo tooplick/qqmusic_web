@@ -64,6 +64,7 @@ class SongInfo:
     album: str
     album_mid: str
     interval: int
+    raw_data: Optional[Dict[str, Any]] = None  # 添加原始数据字段
 
 
 @dataclass
@@ -74,6 +75,124 @@ class DownloadResult:
     filepath: str
     cached: bool = False
     metadata_added: bool = False
+
+
+class CoverManager:
+    """封面管理器"""
+
+    @staticmethod
+    def get_cover_url_by_album_mid(mid: str, size: Literal[150, 300, 500, 800] = None) -> Optional[str]:
+        """通过专辑MID获取封面URL"""
+        if not mid:
+            return None
+        if size is None:
+            size = CONFIG["COVER_SIZE"]
+        if size not in [150, 300, 500, 800]:
+            raise ValueError("不支持的封面尺寸")
+        return f"https://y.gtimg.cn/music/photo_new/T002R{size}x{size}M000{mid}.jpg"
+
+    @staticmethod
+    def get_cover_url_by_vs(vs: str, size: Literal[150, 300, 500, 800] = None) -> Optional[str]:
+        """通过VS值获取封面URL"""
+        if not vs:
+            return None
+        if size is None:
+            size = CONFIG["COVER_SIZE"]
+        if size not in [150, 300, 500, 800]:
+            raise ValueError("不支持的封面尺寸")
+        return f"https://y.qq.com/music/photo_new/T062R{size}x{size}M000{vs}.jpg"
+
+    @staticmethod
+    async def get_valid_cover_url(song_data: Dict[str, Any], size: Literal[150, 300, 500, 800] = None) -> Optional[str]:
+        """获取并验证有效的封面URL（按优先级尝试所有可能的VS值）"""
+        if size is None:
+            size = CONFIG["COVER_SIZE"]
+
+        # 1. 优先尝试专辑MID
+        album_mid = song_data.get('album', {}).get('mid', '')
+        if album_mid:
+            url = CoverManager.get_cover_url_by_album_mid(album_mid, size)
+            logger.debug(f"尝试专辑MID封面: {url}")
+            cover_data = await CoverManager.download_cover(url)
+            if cover_data:
+                logger.info(f"使用专辑MID封面: {url}")
+                return url
+
+        # 2. 尝试所有可用的VS值（按顺序）
+        vs_values = song_data.get('vs', [])
+        logger.debug(f"分析VS值: {vs_values}")
+
+        # 收集所有候选VS值
+        candidate_vs = []
+
+        # 首先收集所有单个有效的VS值
+        for i, vs in enumerate(vs_values):
+            if vs and isinstance(vs, str) and len(vs) >= 3 and ',' not in vs:
+                candidate_vs.append({
+                    'value': vs,
+                    'source': f'vs_single_{i}',
+                    'priority': 1  # 高优先级
+                })
+
+        # 然后收集逗号分隔的VS值部分
+        for i, vs in enumerate(vs_values):
+            if vs and ',' in vs:
+                parts = [part.strip() for part in vs.split(',') if part.strip()]
+                for j, part in enumerate(parts):
+                    if len(part) >= 3:
+                        candidate_vs.append({
+                            'value': part,
+                            'source': f'vs_part_{i}_{j}',
+                            'priority': 2  # 中优先级
+                        })
+
+        # 按优先级排序
+        candidate_vs.sort(key=lambda x: x['priority'])
+
+        logger.debug(f"候选VS值: {[c['value'] for c in candidate_vs]}")
+
+        # 按顺序尝试每个候选VS值
+        for candidate in candidate_vs:
+            url = CoverManager.get_cover_url_by_vs(candidate['value'], size)
+            logger.debug(f"尝试VS值封面 [{candidate['source']}]: {url}")
+            cover_data = await CoverManager.download_cover(url)
+            if cover_data:
+                logger.info(f"使用VS值封面 [{candidate['source']}]: {url}")
+                return url
+
+
+        logger.warning("未找到任何有效的封面URL")
+        return None
+
+    @staticmethod
+    async def download_cover(url: str) -> Optional[bytes]:
+        """下载封面图片"""
+        if not url:
+            return None
+
+        try:
+            async with aiohttp.ClientSession(
+                    timeout=aiohttp.ClientTimeout(total=CONFIG["DOWNLOAD_TIMEOUT"])
+            ) as session:
+                async with session.get(url) as resp:
+                    if resp.status == 200:
+                        content = await resp.read()
+                        # 检查文件大小和内容有效性
+                        if len(content) > 1024:
+                            # 简单验证图片格式
+                            if content.startswith(b'\xff\xd8') or content.startswith(b'\x89PNG'):
+                                logger.debug(f"封面下载成功: {len(content)} bytes")
+                                return content
+                            else:
+                                logger.warning(f"封面图片格式无效: {url}")
+                        else:
+                            logger.warning(f"封面图片过小: {len(content)} bytes, URL: {url}")
+                    else:
+                        logger.warning(f"封面下载失败: HTTP {resp.status}, URL: {url}")
+                    return None
+        except Exception as e:
+            logger.error(f"封面下载异常: {e}, URL: {url}")
+            return None
 
 
 class FileManager:
@@ -120,17 +239,8 @@ class MetadataManager:
     """元数据管理器"""
 
     @staticmethod
-    def get_cover_url(mid: str, size: Literal[150, 300, 500, 800] = None) -> str:
-        """获取封面URL"""
-        if size is None:
-            size = CONFIG["COVER_SIZE"]
-        if size not in [150, 300, 500, 800]:
-            raise ValueError("不支持的封面尺寸")
-        return f"https://y.gtimg.cn/music/photo_new/T002R{size}x{size}M000{mid}.jpg"
-
-    @staticmethod
     async def add_metadata_to_flac(file_path: Path, song_info: SongInfo,
-                                   cover_url: str = None, lyrics_data: dict = None) -> bool:
+                                   lyrics_data: dict = None, song_data: Dict[str, Any] = None) -> bool:
         """为FLAC文件添加封面和歌词"""
         try:
             audio = FLAC(file_path)
@@ -141,18 +251,20 @@ class MetadataManager:
             audio['album'] = song_info.album
 
             # 添加封面
-            if cover_url:
-                cover_data = await FileManager.download_file_content(cover_url)
-                if cover_data:
-                    image = Picture()
-                    image.type = 3  # 封面图片
-                    image.mime = 'image/png' if cover_url.lower().endswith('.png') else 'image/jpeg'
-                    image.desc = 'Cover'
-                    image.data = cover_data
+            if song_data:
+                cover_url = await CoverManager.get_valid_cover_url(song_data)
+                if cover_url:
+                    cover_data = await CoverManager.download_cover(cover_url)
+                    if cover_data:
+                        image = Picture()
+                        image.type = 3  # 封面图片
+                        image.mime = 'image/png' if cover_url.lower().endswith('.png') else 'image/jpeg'
+                        image.desc = 'Cover'
+                        image.data = cover_data
 
-                    audio.clear_pictures()
-                    audio.add_picture(image)
-                    logger.info(f"已添加封面到 {file_path.name}")
+                        audio.clear_pictures()
+                        audio.add_picture(image)
+                        logger.info(f"已添加封面到 {file_path.name}")
 
             # 添加歌词
             if lyrics_data:
@@ -175,7 +287,7 @@ class MetadataManager:
 
     @staticmethod
     async def add_metadata_to_mp3(file_path: Path, song_info: SongInfo,
-                                  cover_url: str = None, lyrics_data: dict = None) -> bool:
+                                  lyrics_data: dict = None, song_data: Dict[str, Any] = None) -> bool:
         """为MP3文件添加封面和歌词"""
         try:
             # 尝试读取现有ID3标签，如果没有则创建新的
@@ -190,23 +302,25 @@ class MetadataManager:
             audio.add(TALB(encoding=3, text=song_info.album))  # 专辑
 
             # 添加封面
-            if cover_url:
-                cover_data = await FileManager.download_file_content(cover_url)
-                if cover_data:
-                    mime_type = 'image/png' if cover_url.lower().endswith('.png') else 'image/jpeg'
+            if song_data:
+                cover_url = await CoverManager.get_valid_cover_url(song_data)
+                if cover_url:
+                    cover_data = await CoverManager.download_cover(cover_url)
+                    if cover_data:
+                        mime_type = 'image/png' if cover_url.lower().endswith('.png') else 'image/jpeg'
 
-                    # 删除现有的封面
-                    audio.delall('APIC')
+                        # 删除现有的封面
+                        audio.delall('APIC')
 
-                    # 添加新封面
-                    audio.add(APIC(
-                        encoding=3,
-                        mime=mime_type,
-                        type=3,
-                        desc='Cover',
-                        data=cover_data
-                    ))
-                    logger.info(f"已添加封面到 {file_path.name}")
+                        # 添加新封面
+                        audio.add(APIC(
+                            encoding=3,
+                            mime=mime_type,
+                            type=3,
+                            desc='Cover',
+                            data=cover_data
+                        ))
+                        logger.info(f"已添加封面到 {file_path.name}")
 
             # 添加歌词
             if lyrics_data:
@@ -240,14 +354,14 @@ class MetadataManager:
 
     @staticmethod
     async def add_metadata_to_file(file_path: Path, song_info: SongInfo,
-                                   cover_url: str = None, lyrics_data: dict = None) -> bool:
+                                   lyrics_data: dict = None, song_data: Dict[str, Any] = None) -> bool:
         """根据文件类型为音频文件添加元数据"""
         file_extension = file_path.suffix.lower()
 
         if file_extension == '.flac':
-            return await MetadataManager.add_metadata_to_flac(file_path, song_info, cover_url, lyrics_data)
+            return await MetadataManager.add_metadata_to_flac(file_path, song_info, lyrics_data, song_data)
         elif file_extension in ['.mp3', '.mpga']:
-            return await MetadataManager.add_metadata_to_mp3(file_path, song_info, cover_url, lyrics_data)
+            return await MetadataManager.add_metadata_to_mp3(file_path, song_info, lyrics_data, song_data)
         else:
             logger.warning(f"不支持为 {file_extension} 格式添加元数据")
             return False
@@ -542,24 +656,20 @@ class MusicDownloader:
             return
 
         try:
-            cover_url = None
-            if song_info.album_mid:
-                cover_url = MetadataManager.get_cover_url(song_info.album_mid)
-
             lyrics_data = None
             try:
                 lyrics_data = await get_lyric(song_info.mid)
             except Exception as e:
                 logger.warning(f"获取歌词失败: {e}")
 
-            if cover_url or lyrics_data:
-                metadata_success = await MetadataManager.add_metadata_to_file(
-                    Path(result.filepath),
-                    song_info,
-                    cover_url,
-                    lyrics_data
-                )
-                result.metadata_added = metadata_success
+            # 使用智能封面获取方法，传递完整的原始歌曲数据
+            metadata_success = await MetadataManager.add_metadata_to_file(
+                Path(result.filepath),
+                song_info,
+                lyrics_data,
+                song_info.raw_data  # 传递完整的原始歌曲数据用于封面获取
+            )
+            result.metadata_added = metadata_success
 
         except Exception as e:
             logger.error(f"添加元数据失败: {e}")
@@ -654,7 +764,8 @@ def api_search():
                 vip=song.get("pay", {}).get("pay_play", 0) != 0,
                 album=song.get("album", {}).get("name", ""),
                 album_mid=song.get("album", {}).get("mid", ""),
-                interval=song.get('interval', 0)
+                interval=song.get('interval', 0),
+                raw_data=song  # 保存完整的原始数据用于封面获取
             ).__dict__)  # 转换为字典以便JSON序列化
 
         return jsonify({'results': formatted_results})
@@ -676,7 +787,17 @@ def api_download():
         return jsonify({'error': '缺少歌曲数据'}), 400
 
     try:
-        song_info = SongInfo(**song_data)
+        # 从字典创建SongInfo对象，包括raw_data
+        song_info = SongInfo(
+            mid=song_data.get('mid', ''),
+            name=song_data.get('name', ''),
+            singers=song_data.get('singers', ''),
+            vip=song_data.get('vip', False),
+            album=song_data.get('album', ''),
+            album_mid=song_data.get('album_mid', ''),
+            interval=song_data.get('interval', 0),
+            raw_data=song_data.get('raw_data')  # 包含原始歌曲数据用于封面获取
+        )
 
         # 检查VIP歌曲权限
         if song_info.vip and not credential_manager.credential:
