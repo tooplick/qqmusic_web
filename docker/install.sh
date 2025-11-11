@@ -87,12 +87,12 @@ fi
 
 # 检测是否在中国地区
 echo "检测网络环境..."
-# 方法1: 检查IP地理位置
+# 检查IP地理位置
 IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/" || echo "")
 if echo "$IP_INFO" | grep -q "\"country\":\"China\""; then
     IS_CHINA=true
 else
-    # 方法2: 检查特定中国网站的可访问性
+    # 检查特定中国网站的可访问性
     if curl -s --connect-timeout 5 "https://www.baidu.com" > /dev/null && \
        ! curl -s --connect-timeout 5 "https://www.google.com" > /dev/null 2>&1; then
         IS_CHINA=true
@@ -175,17 +175,17 @@ if docker-compose ps | grep -q "Up"; then
     echo "QQMusic Web 安装成功！"
     echo ""
     
-    # 获取本地IP地址 - 使用多种方法确保能获取到IP
+    # 获取本地IP地址
     
-    # 方法1: 使用hostname命令
+    # 使用hostname命令
     LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
     
-    # 方法2: 如果方法1失败，使用ip命令
+    # 使用ip命令
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7}' | head -1)
     fi
     
-    # 方法3: 如果前两种方法都失败，尝试从网络接口获取
+    # 如果前两种方法都失败，尝试从网络接口获取
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip addr show 2>/dev/null | grep -oP 'inet \K[\d.]+' | grep -v '127.0.0.1' | head -1)
     fi
@@ -200,7 +200,7 @@ if docker-compose ps | grep -q "Up"; then
         echo "局域网访问地址: http://${LOCAL_IP}:6022"
     fi
     
-    # 尝试获取公网IP地址
+    # 获取公网IP地址
     PUBLIC_IP=$(curl -s --max-time 5 ifconfig.me || curl -s --max-time 5 ipinfo.io/ip || curl -s --max-time 5 api.ipify.org || echo "")
     
     if [ -n "$PUBLIC_IP" ] && [ "$PUBLIC_IP" != "" ]; then
