@@ -52,7 +52,7 @@ else
     rm -rf ./.* 2>/dev/null || true
     
     # 下载项目zip文件
-    echo "下载项目zip文件..."
+    echo "wget项目文件..."
     wget -O qqmusic_web.zip https://github.com/tooplick/qqmusic_web/archive/main.zip
     
     # 检查unzip命令是否存在

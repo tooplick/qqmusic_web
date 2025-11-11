@@ -52,7 +52,7 @@ else
     rm -rf ./.* 2>/dev/null || true
     
     # 下载项目zip文件
-    echo "下载项目zip文件..."
+    echo "wget项目文件..."
     wget -O qqmusic_web.zip https://gitee.com/tooplick/qqmusic_web/repository/archive/main.zip
     
     # 检查unzip命令是否存在
@@ -87,12 +87,12 @@ fi
 
 # 检测是否在中国地区
 echo "检测网络环境..."
-# 方法1: 检查IP地理位置
+# 检查IP地理位置
 IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/" || echo "")
 if echo "$IP_INFO" | grep -q "\"country\":\"China\""; then
     IS_CHINA=true
 else
-    # 方法2: 检查特定中国网站的可访问性
+    # 检查特定中国网站的可访问性
     if curl -s --connect-timeout 5 "https://www.baidu.com" > /dev/null && \
        ! curl -s --connect-timeout 5 "https://www.google.com" > /dev/null 2>&1; then
         IS_CHINA=true
@@ -177,15 +177,15 @@ if docker-compose ps | grep -q "Up"; then
     
     # 获取本地IP地址 - 使用多种方法确保能获取到IP
     
-    # 方法1: 使用hostname命令
+    # 使用hostname命令
     LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
     
-    # 方法2: 如果方法1失败，使用ip命令
+    # 使用ip命令
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7}' | head -1)
     fi
     
-    # 方法3: 如果前两种方法都失败，尝试从网络接口获取
+    # 尝试从网络接口获取
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip addr show 2>/dev/null | grep -oP 'inet \K[\d.]+' | grep -v '127.0.0.1' | head -1)
     fi
