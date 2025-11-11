@@ -30,7 +30,7 @@ CONFIG = {
     "CREDENTIAL_CHECK_INTERVAL": 10,  # 凭证检查间隔(秒)
     "MAX_FILENAME_LENGTH": 100,
     "COVER_SIZE": 800,  # 封面尺寸
-    "DOWNLOAD_TIMEOUT": 30,
+    "DOWNLOAD_TIMEOUT": 60,
     "SEARCH_LIMIT": 10,
     "SERVER_HOST": "0.0.0.0",
     "SERVER_PORT": 6022
@@ -51,7 +51,7 @@ app = Flask(__name__)
 CONFIG["MUSIC_DIR"].mkdir(exist_ok=True)
 
 # 线程池用于执行阻塞操作
-thread_pool = ThreadPoolExecutor(max_workers=2)
+thread_pool = ThreadPoolExecutor(max_workers=4)
 
 
 @dataclass
