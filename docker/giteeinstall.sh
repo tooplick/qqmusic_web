@@ -23,7 +23,16 @@ echo "下载项目文件..."
 # 检查 git 命令是否存在
 if command -v git &> /dev/null; then
     if [ -d ".git" ]; then
-        echo "项目已存在，更新到最新版本..."
+        echo "项目已存在,更新到最新版本..."
+        # 检查当前远程仓库地址
+        CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+        GITEE_REMOTE="https://gitee.com/tooplick/qqmusic_web.git"
+        
+        if [ "$CURRENT_REMOTE" != "$GITEE_REMOTE" ]; then
+            # 修正远程仓库地址为 Gitee...
+            git remote set-url origin "$GITEE_REMOTE"
+        fi
+    
         git pull origin main
     else
         git clone https://gitee.com/tooplick/qqmusic_web.git .
