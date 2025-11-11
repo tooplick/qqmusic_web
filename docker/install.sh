@@ -28,7 +28,7 @@ if command -v git &> /dev/null; then
         GITEE_REMOTE="https://github.com/tooplick/qqmusic_web.git"
         
         if [ "$CURRENT_REMOTE" != "$GITEE_REMOTE" ]; then
-            # 修正远程仓库地址为 GitHub...
+            echo "修正远程仓库地址为 GitHub..."
             git remote set-url origin "$GITEE_REMOTE"
         fi
         
