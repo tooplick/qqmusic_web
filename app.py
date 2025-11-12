@@ -2,6 +2,7 @@ import asyncio
 import pickle
 from pathlib import Path
 from qqmusic_api import search
+from qqmusic_api.search import general_search
 from qqmusic_api.song import get_song_urls, SongFileType
 from qqmusic_api.login import Credential, check_expired
 from qqmusic_api.lyric import get_lyric
@@ -767,17 +768,36 @@ def api_search():
     """搜索歌曲API"""
     data = request.get_json(silent=True) or {}
     keyword = data.get('keyword', '').strip()
+    page = data.get('page', 1)  # 添加页码参数，默认为1
 
     if not keyword:
         return jsonify({'error': '歌曲名不能为空'}), 400
 
     try:
-        results = run_async(search.search_by_type(keyword, num=CONFIG["SEARCH_LIMIT"]))
+        # 一次性获取60条结果
+        search_limit = 60
+        results = run_async(search.search_by_type(keyword, num=search_limit))
         if not results:
             return jsonify({'error': '未找到歌曲'}), 404
 
+        # 计算分页
+        page_size = CONFIG["SEARCH_LIMIT"]  # 10
+        total_results = len(results)
+        total_pages = (total_results + page_size - 1) // page_size  # 向上取整
+
+        # 确保页码在有效范围内
+        if page < 1:
+            page = 1
+        elif page > total_pages:
+            page = total_pages
+
+        # 计算分页结果
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_results = results[start_index:end_index]
+
         formatted_results = []
-        for song in results:
+        for song in paginated_results:
             singers = ", ".join([s.get("name", "") for s in song.get("singer", [])])
 
             formatted_results.append(SongInfo(
@@ -791,7 +811,17 @@ def api_search():
                 raw_data=song  # 保存完整的原始数据用于封面获取
             ).__dict__)  # 转换为字典以便JSON序列化
 
-        return jsonify({'results': formatted_results})
+        return jsonify({
+            'results': formatted_results,
+            'pagination': {
+                'current_page': page,
+                'has_prev': page > 1,
+                'has_next': page < total_pages,
+                'total_pages': total_pages,
+                'total_results': total_results
+            },
+            'all_results': total_results  # 返回实际获取的总数
+        })
 
     except Exception as e:
         logger.error(f"搜索失败: {e}")
@@ -897,6 +927,8 @@ def api_health():
         "music_files_count": len(list(CONFIG["MUSIC_DIR"].glob("*"))) if CONFIG["MUSIC_DIR"].exists() else 0,
         "environment": "container" if CONFIG["IS_CONTAINER"] else "native"
     })
+
+
 
 
 def stop_all_threads():

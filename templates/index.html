@@ -3,97 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QQ音乐下载器</title>
+    <title>QQ音乐播放器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 </head>
 <body>
-    <div class="app-container">
+    <div class="container">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-music"></i>
+                <span>QQ音乐播放器</span>
+            </div>
+            <div class="search-area">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="搜索歌曲、歌手或专辑...">
+                    <button id="search-btn">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">正在连接...</span>
+            </div>
+        </div>
 
-        <!-- 主内容区 -->
-        <main class="main-content">
-            <div class="content-card">
-                <!-- 凭证提示 -->
-                {% if not has_credential %}
-                <div class="credential-notice">
-                    <div class="notice-icon">⚠️</div>
-                    <div class="quality-info">
-                        <div class="notice-title">没有检测到凭证</div>
-                        <div class="notice-desc">请联系管理员获取凭证文件</div>
+        <div class="main-content">
+            <div class="player-section" id="player-section">
+                <button class="fullscreen-btn" id="fullscreen-btn">
+                    <i class="fas fa-expand"></i>
+                </button>
+
+                <h2 class="section-title">
+                    <i class="fas fa-play-circle"></i> 正在播放
+                </h2>
+
+                <div class="current-song">
+                    <div class="album-cover">
+                        <img src="https://y.gtimg.cn/music/photo_new/T002R300x300M000003y8dsH2wBHlo_1.jpg" alt="专辑封面" id="current-cover">
+                    </div>
+                    <div class="song-info">
+                        <h1 class="song-title" id="current-title">等待搜索</h1>
+                        <p class="song-artist" id="current-artist">选择歌曲开始播放</p>
                     </div>
                 </div>
-                {% endif %}
 
-                <!-- 搜索区域 -->
-                <div class="search-section">
-                    <h1 class="search-title">搜索并下载音乐</h1>
-                    <p class="search-subtitle">输入歌曲名、歌手或专辑名称开始搜索</p>
+                <div class="progress-area">
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="timer">
+                        <span id="current-time">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
 
-                    <div class="search-box">
-                        <input type="text" class="search-input" id="search-input" placeholder="搜索歌曲...">
-                        <button class="search-btn" id="search-btn">
-                            <span class="btn-text">搜索</span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner"></span>
-                                搜索中
-                            </span>
+                <div class="controls-main">
+                    <div class="controls-left">
+                        <div class="volume-controls">
+                            <button class="volume-btn" id="volume-down-btn">
+                                <i class="fas fa-volume-down"></i>
+                            </button>
+                            <div class="volume-bar" id="volume-bar">
+                                <div class="volume-level" id="volume-level"></div>
+                            </div>
+                            <button class="volume-btn" id="volume-up-btn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="controls-center">
+                        <button class="control-btn" id="prev-btn">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="control-btn play-pause" id="play-pause-btn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="control-btn" id="next-btn">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+
+                    <div class="controls-right">
+                        <div class="quality-controls">
+                            <label class="quality-option" id="flac-option">
+                                <input type="radio" name="quality" value="flac" checked>
+                                <span>FLAC</span>
+                            </label>
+                            <label class="quality-option" id="mp3-option">
+                                <input type="radio" name="quality" value="mp3">
+                                <span>MP3</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2 class="section-title">
+                    <i class="fas fa-search"></i> 搜索结果
+                </h2>
+
+                <div class="results-info">
+                    <span id="results-count">共找到 0 首歌曲</span>
+                    <div class="loading-spinner" id="loading-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> 搜索中...
+                    </div>
+                    <div class="pagination-controls" id="pagination-controls" style="display: none;">
+                        <button class="pagination-btn" id="prev-page-btn" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="pagination-info" id="page-info">第 1 页</span>
+                        <button class="pagination-btn" id="next-page-btn" disabled>
+                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- 音质选择 -->
-                <div class="quality-section">
-                    <div class="section-title">音质选择</div>
-                    <div class="quality-options">
-                        <div class="quality-option" data-quality="standard">
-                            <div class="quality-icon">
-                                <img src="{{ url_for('static', filename='images/mp3_icon.png') }}" alt="MP3" class="format-icon">
-                            </div>
-                            <div class="quality-info">
-                                <div class="quality-name">标准音质</div>
-                                <div class="quality-desc">MP3优先，文件较小</div>
-                            </div>
-                        </div>
-                        <div class="quality-option selected" data-quality="high">
-                            <div class="quality-icon">
-                                <img src="{{ url_for('static', filename='images/flac_icon.gif') }}" alt="FLAC" class="format-icon">
-                            </div>
-                            <div class="quality-info">
-                                <div class="quality-name">高品质音质</div>
-                                <div class="quality-desc">FLAC优先，音质最佳</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 搜索结果 -->
-                <div class="results-section">
-                    <div class="section-header">
-                        <div class="results-title-container">
-                            <h2 class="section-title" id="results-title">搜索结果</h2>
-                            <div class="results-status" id="results-status"></div>
-                        </div>
-                        <div class="results-count" id="results-count"></div>
-                    </div>
-
-                    <div class="results-container" id="results">
-                        <div class="empty-state">
-                            <div class="empty-icon">🔍</div>
-                            <div class="empty-title">开始搜索音乐</div>
-                            <div class="empty-desc">在搜索框中输入歌曲名开始搜索</div>
-                        </div>
+                <div class="results-container" id="results-container">
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <p>输入关键词搜索歌曲</p>
                     </div>
                 </div>
             </div>
-        </main>
-
-        <!-- 页脚 -->
-        <footer class="app-footer">
-            <div class="footer-content">
-                <div class="footer-text">© 2025 QQ音乐下载 · 仅供学习使用</div>
-            </div>
-        </footer>
+        </div>
     </div>
+
+    <!-- 通知消息 -->
+    <div class="notification" id="notification"></div>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
