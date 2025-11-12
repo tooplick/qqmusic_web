@@ -8,12 +8,11 @@ services:
     ports:
       - "6022:6022"
     volumes:
-      # 挂载目录
-      - /root/qqmusic-web/:/app/
+      # 挂载数据目录
+      - /root/qqmusic-web:/app/data
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
-      # 添加环境变量标识容器环境
       - DOCKER_ENV=true
     restart: unless-stopped
     healthcheck:
