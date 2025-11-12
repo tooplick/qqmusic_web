@@ -9,8 +9,7 @@ services:
       - "6022:6022"
     volumes:
       - /root/qqmusic_web/:/app  # 挂载配置文件夹
-      - /root/qqmusic_web/music:/app/music    # 挂载音乐目录
-      - ..:/app  # 保留代码挂载用于开发
+      - ..:/app  
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
