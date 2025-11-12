@@ -8,12 +8,8 @@ services:
     ports:
       - "6022:6022"
     volumes:
-      # 挂载凭证文件
-      - /root/qqmusic-web/qqmusic_cred.pkl:/app/qqmusic_cred.pkl
-      # 挂载音乐目录
-      - /root/qqmusic-web/music:/app/music
-      # 挂载日志目录
-      - /root/qqmusic-web/logs:/app/logs
+      # 挂载目录
+      - /root/qqmusic-web/:/app/
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0

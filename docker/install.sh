@@ -106,13 +106,6 @@ else
     echo "项目文件下载完成"
 fi
 
-# 如果项目中有凭证文件，复制到数据目录
-if [ -f "qqmusic_cred.pkl" ]; then
-    echo "发现项目中的凭证文件，复制到数据目录..."
-    cp qqmusic_cred.pkl $DATA_DIR/qqmusic_cred.pkl
-    chmod 644 $DATA_DIR/qqmusic_cred.pkl
-fi
-
 # 检测是否在中国地区
 echo "检测网络环境..."
 # 检查IP地理位置
