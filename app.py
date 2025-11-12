@@ -160,7 +160,6 @@ class CoverManager:
                 logger.info(f"使用VS值封面 [{candidate['source']}]: {url}")
                 return url
 
-
         logger.warning("未找到任何有效的封面URL")
         return None
 
@@ -379,6 +378,18 @@ class CredentialManager:
             "status": "未检测到凭证",
             "expired": True
         }
+        self._loop = None  # 添加事件循环引用
+
+    def get_or_create_loop(self):
+        """获取或创建事件循环"""
+        try:
+            return asyncio.get_running_loop()
+        except RuntimeError:
+            # 如果没有运行中的事件循环，创建一个新的
+            if self._loop is None:
+                self._loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._loop)
+            return self._loop
 
     def load_credential(self) -> Optional[Credential]:
         """加载凭证"""
@@ -405,7 +416,12 @@ class CredentialManager:
     async def refresh_credential(self, cred: Credential) -> bool:
         """刷新凭证"""
         try:
-            if await cred.can_refresh():
+            # 确保在当前事件循环中运行
+            current_loop = self.get_or_create_loop()
+
+            # 检查是否可以刷新
+            can_refresh = await cred.can_refresh()
+            if can_refresh:
                 await cred.refresh()
                 return self.save_credential(cred)
             return False
@@ -432,14 +448,19 @@ class CredentialManager:
             return None
 
         try:
+            # 使用专用事件循环进行检查
+            loop = self.get_or_create_loop()
+
             # 检查是否过期
-            is_expired = run_async(check_expired(cred))
+            is_expired = loop.run_until_complete(check_expired(cred))
 
             if is_expired:
                 logger.info("本地凭证已过期，尝试自动刷新...")
                 self.status["status"] = "本地凭证已过期，尝试自动刷新..."
 
-                if run_async(self.refresh_credential(cred)):
+                # 使用相同的事件循环进行刷新
+                refresh_success = loop.run_until_complete(self.refresh_credential(cred))
+                if refresh_success:
                     logger.info("凭证自动刷新成功!")
                     self.status.update({
                         "status": "凭证自动刷新成功!",
@@ -484,7 +505,9 @@ class CredentialManager:
             return
 
         try:
-            is_expired = run_async(check_expired(self.credential))
+            # 使用专用事件循环
+            loop = self.get_or_create_loop()
+            is_expired = loop.run_until_complete(check_expired(self.credential))
 
             if is_expired:
                 logger.info("检测到凭证已过期，尝试自动刷新...")
@@ -493,7 +516,8 @@ class CredentialManager:
                     "expired": True
                 })
 
-                if run_async(self.refresh_credential(self.credential)):
+                refresh_success = loop.run_until_complete(self.refresh_credential(self.credential))
+                if refresh_success:
                     logger.info("凭证自动刷新成功!")
                     self.status.update({
                         "status": "凭证自动刷新成功!",
@@ -690,14 +714,19 @@ stop_threads = False
 def run_async(coro):
     """运行异步函数"""
     try:
+        # 尝试获取当前运行的事件循环
         loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        return loop.run_until_complete(coro)
-    else:
+        # 如果已经有运行中的循环，使用线程池执行
         future = asyncio.run_coroutine_threadsafe(coro, loop)
         return future.result()
+    except RuntimeError:
+        # 如果没有运行中的事件循环，创建新的
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
 
 
 def start_credential_checker():
