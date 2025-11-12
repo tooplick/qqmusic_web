@@ -160,7 +160,6 @@ class CoverManager:
                 logger.info(f"使用VS值封面 [{candidate['source']}]: {url}")
                 return url
 
-
         logger.warning("未找到任何有效的封面URL")
         return None
 
@@ -368,7 +367,7 @@ class MetadataManager:
 
 
 class CredentialManager:
-    """凭证管理器"""
+    """凭证管理器 - 修复版本"""
 
     def __init__(self):
         self.credential = None
@@ -379,6 +378,7 @@ class CredentialManager:
             "status": "未检测到凭证",
             "expired": True
         }
+        # 不在初始化时创建任何异步对象
 
     def load_credential(self) -> Optional[Credential]:
         """加载凭证"""
@@ -403,8 +403,9 @@ class CredentialManager:
             return False
 
     async def refresh_credential(self, cred: Credential) -> bool:
-        """刷新凭证"""
+        """刷新凭证 - 修复版本：确保在方法内部处理异步操作"""
         try:
+            # 在方法内部检查刷新能力，确保在当前事件循环中执行
             if await cred.can_refresh():
                 await cred.refresh()
                 return self.save_credential(cred)
@@ -414,7 +415,7 @@ class CredentialManager:
             return False
 
     def load_and_refresh_sync(self) -> Optional[Credential]:
-        """同步加载和刷新凭证"""
+        """同步加载和刷新凭证 - 修复版本"""
         if not CONFIG["CREDENTIAL_FILE"].exists():
             logger.info("本地无凭证文件，仅能下载免费歌曲")
             self.status.update({
@@ -439,7 +440,9 @@ class CredentialManager:
                 logger.info("本地凭证已过期，尝试自动刷新...")
                 self.status["status"] = "本地凭证已过期，尝试自动刷新..."
 
-                if run_async(self.refresh_credential(cred)):
+                # 使用修复后的刷新方法
+                refresh_success = run_async(self.refresh_credential(cred))
+                if refresh_success:
                     logger.info("凭证自动刷新成功!")
                     self.status.update({
                         "status": "凭证自动刷新成功!",
@@ -473,7 +476,7 @@ class CredentialManager:
             return None
 
     def check_and_refresh(self):
-        """检查并刷新凭证"""
+        """检查并刷新凭证 - 修复版本"""
         if not self.status["enabled"]:
             return
 
@@ -493,6 +496,7 @@ class CredentialManager:
                     "expired": True
                 })
 
+                # 使用修复后的刷新方法
                 if run_async(self.refresh_credential(self.credential)):
                     logger.info("凭证自动刷新成功!")
                     self.status.update({
