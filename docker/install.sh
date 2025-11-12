@@ -104,14 +104,14 @@ else
     echo "项目文件下载完成"
 fi
 
-# 迁移步骤：放在下载项目文件之后，确保两种方式都会执行
-echo "检查并迁移旧的凭证文件..."
-if [ -f "/root/qqmusic_web/qqmusic_cred.pkl" ]; then
+# 迁移凭证
+echo "检查并迁移凭证文件..."
+if [ ! -f "/root/qqmusic_web/qqmusic_cred.pkl" ]; then
     echo "正在从Git迁移凭证文件..."
     cp $PROJECT_DIR/qqmusic_cred.pkl /root/qqmusic_web/qqmusic_cred.pkl
     echo "凭证文件已迁移到 /root/qqmusic_web/qqmusic_cred.pkl"
 else
-    echo "未找到旧的凭证文件，跳过迁移"
+    echo "本地已有凭证文件，跳过迁移"
 fi
 
 # 检测是否在中国地区
