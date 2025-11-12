@@ -27,17 +27,17 @@ def get_base_path():
     """获取基础路径，优先使用 Docker 环境配置"""
     # 方法1: 检查环境变量
     if os.getenv('DOCKER_ENV') == 'true':
-        return Path('/app')
+        return Path('/app/data')
     
     # 方法2: 检查 /.dockerenv 文件
     if os.path.exists('/.dockerenv'):
-        return Path('/app')
-    
+        return Path('/app/data')
+
     # 方法3: 检查 cgroup
     try:
         with open('/proc/1/cgroup', 'rt') as f:
             if 'docker' in f.read():
-                return Path('/app')
+                return Path('/app/data')
     except:
         pass
     
