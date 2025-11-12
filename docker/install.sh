@@ -106,14 +106,10 @@ fi
 
 # 迁移步骤：放在下载项目文件之后，确保两种方式都会执行
 echo "检查并迁移旧的凭证文件..."
-if [ -f "$PROJECT_DIR/qqmusic_cred.pkl" ]; then
-    echo "检测到旧的凭证文件，正在迁移到新位置..."
+if [ -f "/root/qqmusic_web/qqmusic_cred.pkl" ]; then
+    echo "正在从Git迁移凭证文件..."
     cp $PROJECT_DIR/qqmusic_cred.pkl /root/qqmusic_web/qqmusic_cred.pkl
     echo "凭证文件已迁移到 /root/qqmusic_web/qqmusic_cred.pkl"
-    
-    # 可选：备份后删除旧文件
-    # echo "删除旧的凭证文件..."
-    # rm -f $PROJECT_DIR/qqmusic_cred.pkl
 else
     echo "未找到旧的凭证文件，跳过迁移"
 fi
