@@ -22,10 +22,35 @@ import json
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 
-# 配置常量
+# 动态确定基础路径 - 针对 Docker 环境优化
+def get_base_path():
+    """获取基础路径，优先使用 Docker 环境配置"""
+    # 方法1: 检查环境变量
+    if os.getenv('DOCKER_ENV') == 'true':
+        return Path('/app')
+    
+    # 方法2: 检查 /.dockerenv 文件
+    if os.path.exists('/.dockerenv'):
+        return Path('/app')
+    
+    # 方法3: 检查 cgroup
+    try:
+        with open('/proc/1/cgroup', 'rt') as f:
+            if 'docker' in f.read():
+                return Path('/app')
+    except:
+        pass
+    
+    # 在宿主机中运行，使用项目根目录
+    return Path(__file__).parent.absolute()
+
+BASE_PATH = get_base_path()
+
+# 配置常量 - 使用动态路径
 CONFIG = {
-    "CREDENTIAL_FILE": Path("qqmusic_cred.pkl"),
-    "MUSIC_DIR": Path("./music"),
+    "BASE_PATH": BASE_PATH,
+    "CREDENTIAL_FILE": BASE_PATH / "qqmusic_cred.pkl",
+    "MUSIC_DIR": BASE_PATH / "music",
     "CLEANUP_INTERVAL": 10,  # 清理间隔(秒)
     "CREDENTIAL_CHECK_INTERVAL": 10,  # 凭证检查间隔(秒)
     "MAX_FILENAME_LENGTH": 100,
@@ -41,7 +66,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("app.log", encoding="utf-8"),
+        logging.FileHandler(BASE_PATH / "app.log", encoding="utf-8"),
         logging.StreamHandler()
     ]
 )
@@ -159,7 +184,6 @@ class CoverManager:
             if cover_data:
                 logger.info(f"使用VS值封面 [{candidate['source']}]: {url}")
                 return url
-
 
         logger.warning("未找到任何有效的封面URL")
         return None
@@ -871,7 +895,10 @@ def api_health():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "music_dir_exists": CONFIG["MUSIC_DIR"].exists(),
-        "music_files_count": len(list(CONFIG["MUSIC_DIR"].glob("*"))) if CONFIG["MUSIC_DIR"].exists() else 0
+        "music_files_count": len(list(CONFIG["MUSIC_DIR"].glob("*"))) if CONFIG["MUSIC_DIR"].exists() else 0,
+        "base_path": str(BASE_PATH),
+        "credential_file_exists": CONFIG["CREDENTIAL_FILE"].exists(),
+        "docker_env": os.getenv('DOCKER_ENV', 'false')
     })
 
 
@@ -888,6 +915,10 @@ def init_app():
     start_credential_checker()
     start_cleanup_scheduler()
     logger.info("应用初始化完成")
+    logger.info(f"基础路径: {BASE_PATH}")
+    logger.info(f"凭证文件: {CONFIG['CREDENTIAL_FILE']}")
+    logger.info(f"音乐目录: {CONFIG['MUSIC_DIR']}")
+    logger.info(f"Docker 环境: {os.getenv('DOCKER_ENV', '未设置')}")
 
 
 if __name__ == '__main__':

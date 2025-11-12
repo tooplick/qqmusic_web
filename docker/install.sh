@@ -1,9 +1,9 @@
 #!/bin/bash
-# QQMusic Web 一键安装脚本
+# QQMusic Web Docker 环境一键安装脚本
 
 set -e
 
-echo "开始安装 QQMusic Web..."
+echo "开始安装 QQMusic Web Docker 环境..."
 
 # 检查是否以 root 权限运行
 if [ "$EUID" -ne 0 ]; then
@@ -16,6 +16,18 @@ PROJECT_DIR="/opt/qqmusic-web"
 echo "创建项目目录: $PROJECT_DIR"
 mkdir -p $PROJECT_DIR
 cd $PROJECT_DIR
+
+# 创建数据目录
+DATA_DIR="/root/qqmusic-web"
+echo "创建数据目录: $DATA_DIR"
+mkdir -p $DATA_DIR
+mkdir -p $DATA_DIR/music
+mkdir -p $DATA_DIR/logs
+
+# 设置权限
+chmod 755 $DATA_DIR
+chmod 755 $DATA_DIR/music
+chmod 755 $DATA_DIR/logs
 
 # 下载项目文件
 echo "下载项目文件..."
@@ -92,6 +104,13 @@ else
     rm -f qqmusic_web.zip
     
     echo "项目文件下载完成"
+fi
+
+# 如果项目中有凭证文件，复制到数据目录
+if [ -f "qqmusic_cred.pkl" ]; then
+    echo "发现项目中的凭证文件，复制到数据目录..."
+    cp qqmusic_cred.pkl $DATA_DIR/qqmusic_cred.pkl
+    chmod 644 $DATA_DIR/qqmusic_cred.pkl
 fi
 
 # 检测是否在中国地区
@@ -177,29 +196,28 @@ docker-compose up -d --build --force-recreate
 
 # 等待服务启动
 echo "等待服务启动..."
-sleep 2
+sleep 5
 
 # 检查服务状态
 if docker-compose ps | grep -q "Up"; then
-    echo "QQMusic Web 安装成功！"
+    echo "QQMusic Web Docker 环境安装成功！"
+    echo ""
+    
+    # 显示数据目录信息
+    echo "数据目录: $DATA_DIR"
+    echo "音乐文件存储位置: $DATA_DIR/music/"
+    echo "凭证文件位置: $DATA_DIR/qqmusic_cred.pkl"
+    echo "日志文件位置: $DATA_DIR/logs/"
     echo ""
     
     # 获取本地IP地址
-    
-    # 使用hostname命令
     LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
-    
-    # 使用ip命令
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7}' | head -1)
     fi
-    
-    # 如果前两种方法都失败，尝试从网络接口获取
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip addr show 2>/dev/null | grep -oP 'inet \K[\d.]+' | grep -v '127.0.0.1' | head -1)
     fi
-    
-    # 如果仍然无法获取IP，使用默认值
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP="127.0.0.1"
     fi
@@ -222,13 +240,21 @@ if docker-compose ps | grep -q "Up"; then
     
     echo ""
     echo "项目目录: $PROJECT_DIR"
+    echo "数据目录: $DATA_DIR"s
     echo ""
     
-    echo "管理命令:"
+    echo "Docker 管理命令:"
+    echo "   查看状态: cd $PROJECT_DIR/docker && sudo docker-compose ps"
     echo "   查看日志: cd $PROJECT_DIR/docker && sudo docker-compose logs -f"
     echo "   停止服务: cd $PROJECT_DIR/docker && sudo docker-compose down"
     echo "   重启服务: cd $PROJECT_DIR/docker && sudo docker-compose restart"
     echo "   更新服务: cd $PROJECT_DIR/docker && sudo docker-compose up -d --build --force-recreate"
+    
+    echo ""
+    echo "重要提示:"
+    echo "   如需手动管理凭证文件，请操作: $DATA_DIR/qqmusic_cred.pkl"
+    echo "   音乐文件位置: $DATA_DIR/music/"
+    echo "   如需备份，请备份整个数据目录: $DATA_DIR"
     
     echo ""
 else

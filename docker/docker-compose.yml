@@ -8,10 +8,21 @@ services:
     ports:
       - "6022:6022"
     volumes:
-      - ..:/app  
+      # 挂载凭证文件
+      - /root/qqmusic-web/qqmusic_cred.pkl:/app/qqmusic_cred.pkl
+      # 挂载音乐目录
+      - /root/qqmusic-web/music:/app/music
+      # 挂载日志目录
+      - /root/qqmusic-web/logs:/app/logs
     environment:
-      - FLASK_ENV=development
-      - FLASK_DEBUG=1
-    stdin_open: true
-    tty: true
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      # 添加环境变量标识容器环境
+      - DOCKER_ENV=true
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6022/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
