@@ -42,8 +42,9 @@ if command -v git &> /dev/null; then
             echo "修正远程仓库地址为 GitHub..."
             git remote set-url origin "$GITEE_REMOTE"
         fi
-        
-        git pull origin main
+        git fetch origin
+        git reset --hard origin/main
+        git clean -fd
     else
         git clone https://github.com/tooplick/qqmusic_web.git .
     fi
@@ -242,6 +243,7 @@ if docker-compose ps | grep -q "Up"; then
     
     echo ""
     echo "项目目录: $PROJECT_DIR"
+    echo "配置目录: /root/qqmusic_web/"
     echo ""
     
     echo "管理命令:"
