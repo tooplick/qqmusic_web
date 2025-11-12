@@ -31,8 +31,9 @@ if command -v git &> /dev/null; then
             echo "修正远程仓库地址为 GitHub..."
             git remote set-url origin "$GITEE_REMOTE"
         fi
-        
-        git pull origin main
+        git fetch --all
+        git reset --hard origin/main
+        git clean -fd
     else
         git clone https://github.com/tooplick/qqmusic_web.git .
     fi
