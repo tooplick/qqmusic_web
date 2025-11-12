@@ -11,11 +11,23 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+
 # 创建项目目录
 PROJECT_DIR="/opt/qqmusic-web"
 echo "创建项目目录: $PROJECT_DIR"
 mkdir -p $PROJECT_DIR
 cd $PROJECT_DIR
+
+# 创建配置目录
+echo "创建配置目录..."
+mkdir -p /root/qqmusic_web/credential
+mkdir -p /root/qqmusic_web/music
+
+# 设置目录权限
+chmod 755 /root/qqmusic_web/credential
+chmod 755 /root/qqmusic_web/music
+
+echo "配置目录已创建: /root/qqmusic_web/"
 
 # 下载项目文件
 echo "下载项目文件..."
@@ -92,6 +104,16 @@ else
     rm -f qqmusic_web.zip
     
     echo "项目文件下载完成"
+fi
+
+# 迁移凭证
+echo "检查并迁移凭证文件..."
+if [ ! -f "/root/qqmusic_web/credential/qqmusic_cred.pkl" ]; then
+    echo "正在从Git迁移凭证文件..."
+    cp $PROJECT_DIR/qqmusic_cred.pkl /root/qqmusic_web/credential/qqmusic_cred.pkl
+    echo "凭证文件已迁移到 /root/qqmusic_web/credential/qqmusic_cred.pkl"
+else
+    echo "本地已有凭证文件，跳过迁移"
 fi
 
 # 检测是否在中国地区
@@ -184,7 +206,7 @@ if docker-compose ps | grep -q "Up"; then
     echo "QQMusic Web 安装成功！"
     echo ""
     
-    # 获取本地IP地址 - 使用多种方法确保能获取到IP
+    # 获取本地IP地址
     
     # 使用hostname命令
     LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
@@ -194,7 +216,7 @@ if docker-compose ps | grep -q "Up"; then
         LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7}' | head -1)
     fi
     
-    # 尝试从网络接口获取
+    # 如果前两种方法都失败，尝试从网络接口获取
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "" ]; then
         LOCAL_IP=$(ip addr show 2>/dev/null | grep -oP 'inet \K[\d.]+' | grep -v '127.0.0.1' | head -1)
     fi
@@ -209,7 +231,7 @@ if docker-compose ps | grep -q "Up"; then
         echo "局域网访问地址: http://${LOCAL_IP}:6022"
     fi
     
-    # 尝试获取公网IP地址
+    # 获取公网IP地址
     PUBLIC_IP=$(curl -s --max-time 5 ifconfig.me || curl -s --max-time 5 ipinfo.io/ip || curl -s --max-time 5 api.ipify.org || echo "")
     
     if [ -n "$PUBLIC_IP" ] && [ "$PUBLIC_IP" != "" ]; then
@@ -222,6 +244,7 @@ if docker-compose ps | grep -q "Up"; then
     
     echo ""
     echo "项目目录: $PROJECT_DIR"
+    echo "配置目录: /root/qqmusic_web/"
     echo ""
     
     echo "管理命令:"
