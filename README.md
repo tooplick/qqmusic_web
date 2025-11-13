@@ -105,13 +105,6 @@ sudo -E bash -c "$(curl -fsSL https://gitee.com/tooplick/qqmusic_web/raw/main/do
 - **端点**: `GET /api/health`
 - **功能**: 检查后端服务的健康状态和关键目录信息。
 
-## 注意事项
-
-### 法律声明
-- 本工具仅供学习和研究使用
-- 请尊重音乐版权，下载后请在24小时内删除
-- 不得用于商业用途
-
 ## 更新日志
 
 ### v2.1.1
