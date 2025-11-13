@@ -188,7 +188,7 @@ body {
     aspect-ratio: 1;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     margin-bottom: 18px;
     transition: var(--transition);
 }
