@@ -133,7 +133,7 @@ else
 fi
 
 if [ "$IS_CHINA" = true ]; then
-    echo "检测到中国地区网络环境，修改 Dockerfile 使用国内镜像源"
+    echo "检测到中国大陆网络环境，修改 Dockerfile 使用国内镜像源"
     
     # 备份原始 Dockerfile
     if [ -f "docker/dockerfile" ]; then
@@ -145,7 +145,7 @@ if [ "$IS_CHINA" = true ]; then
     
     echo "Dockerfile 已修改为使用国内镜像源"
 else
-    echo "使用默认官方镜像源"
+    echo "非中国大陆网络环境，使用默认官方镜像源"
 fi
 
 # 检查 Docker 是否安装
