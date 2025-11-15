@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 </head>
+
 <body>
     <div class="container">
         <div class="header-container">
@@ -40,74 +42,87 @@
                 </h2>
 
                 <div class="current-song">
-                    <!-- 专辑封面区域 - 点击时隐藏整个区域 -->
-                    <div class="album-cover" id="album-cover">
-                        <img src="https://y.gtimg.cn/music/photo_new/T002R300x300M000003y8dsH2wBHlo_1.jpg" alt="专辑封面" id="current-cover">
-                    </div>
+                    <div class="song-main-content">
+                        <!-- 专辑封面容器 -->
+                        <div class="album-cover-container">
+                            <div class="album-cover" id="album-cover">
+                                <img src="https://y.gtimg.cn/music/photo_new/T002R300x300M000003y8dsH2wBHlo_1.jpg"
+                                    alt="专辑封面" id="current-cover">
+                            </div>
+                        </div>
 
-                    <!-- 歌词显示区域 -->
-                    <div class="lyrics-display" id="lyrics-display">
-                        <div class="lyrics-content" id="lyrics-content">
-                            <div class="empty-lyrics">
-                                <i class="fas fa-music"></i>
-                                <p>暂无歌词</p>
+                        <!-- 歌词容器 -->
+                        <div class="lyrics-container">
+                            <div class="lyrics-display" id="lyrics-display">
+                                <div class="lyrics-content" id="lyrics-content">
+                                    <div class="empty-lyrics">
+                                        <i class="fas fa-music"></i>
+                                        <p>暂无歌词</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 歌曲信息容器 -->
+                        <div class="song-info-container">
+                            <div class="song-info">
+                                <h1 class="song-title" id="current-title">等待搜索</h1>
+                                <p class="song-artist" id="current-artist">选择歌曲开始播放</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="song-info">
-                        <h1 class="song-title" id="current-title">等待搜索</h1>
-                        <p class="song-artist" id="current-artist">选择歌曲开始播放</p>
-                    </div>
-                </div>
-
-                <div class="progress-area">
-                    <div class="progress-bar" id="progress-bar">
-                        <div class="progress" id="progress"></div>
-                    </div>
-                    <div class="timer">
-                        <span id="current-time">0:00</span>
-                        <span id="total-time">0:00</span>
-                    </div>
-                </div>
-
-                <div class="controls-main">
-                    <div class="controls-left">
-                        <div class="volume-controls">
-                            <button class="volume-btn" id="volume-down-btn">
-                                <i class="fas fa-volume-down"></i>
-                            </button>
-                            <div class="volume-bar" id="volume-bar">
-                                <div class="volume-level" id="volume-level"></div>
+                    <!-- 控制区域容器 -->
+                    <div class="controls-container">
+                        <div class="progress-area">
+                            <div class="progress-bar" id="progress-bar">
+                                <div class="progress" id="progress"></div>
                             </div>
-                            <button class="volume-btn" id="volume-up-btn">
-                                <i class="fas fa-volume-up"></i>
-                            </button>
+                            <div class="timer">
+                                <span id="current-time">0:00</span>
+                                <span id="total-time">0:00</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="controls-center">
-                        <button class="control-btn" id="prev-btn">
-                            <i class="fas fa-step-backward"></i>
-                        </button>
-                        <button class="control-btn play-pause" id="play-pause-btn">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="control-btn" id="next-btn">
-                            <i class="fas fa-step-forward"></i>
-                        </button>
-                    </div>
+                        <div class="controls-main">
+                            <div class="controls-left">
+                                <div class="volume-controls">
+                                    <button class="volume-btn" id="volume-down-btn">
+                                        <i class="fas fa-volume-down"></i>
+                                    </button>
+                                    <div class="volume-bar" id="volume-bar">
+                                        <div class="volume-level" id="volume-level"></div>
+                                    </div>
+                                    <button class="volume-btn" id="volume-up-btn">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                </div>
+                            </div>
 
-                    <div class="controls-right">
-                        <div class="quality-controls">
-                            <label class="quality-option" id="flac-option">
-                                <input type="radio" name="quality" value="flac" checked>
-                                <span>FLAC</span>
-                            </label>
-                            <label class="quality-option" id="mp3-option">
-                                <input type="radio" name="quality" value="mp3">
-                                <span>MP3</span>
-                            </label>
+                            <div class="controls-center">
+                                <button class="control-btn" id="prev-btn">
+                                    <i class="fas fa-step-backward"></i>
+                                </button>
+                                <button class="control-btn play-pause" id="play-pause-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="control-btn" id="next-btn">
+                                    <i class="fas fa-step-forward"></i>
+                                </button>
+                            </div>
+
+                            <div class="controls-right">
+                                <div class="quality-controls">
+                                    <label class="quality-option" id="flac-option">
+                                        <input type="radio" name="quality" value="flac" checked>
+                                        <span>FLAC</span>
+                                    </label>
+                                    <label class="quality-option" id="mp3-option">
+                                        <input type="radio" name="quality" value="mp3">
+                                        <span>MP3</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,7 +144,7 @@
                         </button>
                         <span class="pagination-info" id="page-info">第 1 页</span>
                         <button class="pagination-btn" id="next-page-btn" disabled>
-                             <i class="fas fa-chevron-right"></i>
+                            <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
@@ -149,4 +164,5 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>
