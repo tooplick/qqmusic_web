@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 </head>
-
 <body>
     <div class="container">
         <div class="header-container">
@@ -44,7 +42,7 @@
                 <div class="current-song">
                     <!-- 专辑封面区域 - 点击时隐藏整个区域 -->
                     <div class="album-cover" id="album-cover">
-                        <img src="{{ url_for('static', filename='images/cover.png') }}" alt="专辑封面" id="current-cover">
+                        <img src="https://y.gtimg.cn/music/photo_new/T002R300x300M000003y8dsH2wBHlo_1.jpg" alt="专辑封面" id="current-cover">
                     </div>
 
                     <!-- 歌词显示区域 -->
@@ -131,7 +129,7 @@
                         </button>
                         <span class="pagination-info" id="page-info">第 1 页</span>
                         <button class="pagination-btn" id="next-page-btn" disabled>
-                            <i class="fas fa-chevron-right"></i>
+                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
@@ -151,5 +149,4 @@
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
-
 </html>

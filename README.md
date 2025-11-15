@@ -8,31 +8,6 @@
 - **在线播放**：搜索播放歌曲
 - **多音质下载**: 支持标准音质(MP3)和高品质音质(FLAC)
 
-## 项目结构
-
-```
-qqmusic_web/
-├── app.py                       # Flask Web服务器
-├── requirements.txt             # Python 依赖项
-├── poetry.lock                  
-├── pyproject.toml               
-├── qqmusic_cred.pkl             # 凭证文件
-├── music/                       # 音乐文件存储目录
-├── static/             
-│   ├── css/
-│   │    └── style.css           # 样式文件
-│   ├── js/
-│   │    └── script.js           # 前端交互脚本
-│   └── images/ 
-├── templates/         
-│   └── index.html               # 主页
-└── docker/             
-    ├── dockerfile               # Docker 镜像构建文件
-    ├── docker-compose.yml       # 容器编排配置
-    ├── giteeinstall.sh 
-    └── install.sh               # 安装脚本
-```
-
 ## 安装部署
 
 ### Docker 一键部署(推荐)
