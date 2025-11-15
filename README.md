@@ -36,11 +36,12 @@ sudo -E bash -c "$(curl -fsSL https://gitee.com/tooplick/qqmusic_web/raw/main/do
 
 3. **启动应用**
    ```bash
-   python app.py
+   python run.py
    ```
 
 4. **访问应用**
    打开浏览器访问 `http://localhost:6022`
+   凭证管理界面 `http://localhost:6022/admin`
 
 5。 **配置文件夹**
  - `/root/qqmusic_web/credential` #凭证文件夹
@@ -81,6 +82,11 @@ sudo -E bash -c "$(curl -fsSL https://gitee.com/tooplick/qqmusic_web/raw/main/do
 - **功能**: 检查后端服务的健康状态和关键目录信息。
 
 ## 更新日志
+
+### v2.1.2
+- 重写项目结构
+- 更新凭证管理页面
+- 一键清空/music文件夹
 
 ### v2.1.1
 - 播放改为流式传输

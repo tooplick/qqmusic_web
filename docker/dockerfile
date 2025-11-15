@@ -21,4 +21,4 @@ COPY . .
 EXPOSE 6022
 
 # 启动应用
-CMD ["python", "run.py"]
+CMD ["python", "app.py"]

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ音乐凭证管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>QQ音乐凭证管理</h1>
+            <p>安全便捷地管理您的QQ音乐凭证</p>
+        </header>
+
+        <div class="content">
+            <div class="section">
+                <h2>生成登录二维码</h2>
+                <div class="login-options">
+                    <button id="qqLoginBtn" class="login-btn">
+                        <i class="fab fa-qq"></i> QQ登录
+                    </button>
+                    <button id="wxLoginBtn" class="login-btn">
+                        <i class="fab fa-weixin"></i> 微信登录
+                    </button>
+                </div>
+                <div id="qrcodeContainer" class="qrcode-container">
+                    <p>请使用手机扫描以下二维码登录：</p>
+                    <div class="qrcode-image-container">
+                        <img id="qrcodeImage" class="qrcode-image" src="" alt="登录二维码">
+                        <div id="qrcodePlaceholder" class="qrcode-placeholder">
+                            <i class="fas fa-qrcode"></i>
+                            <p>点击上方按钮生成二维码</p>
+                        </div>
+                    </div>
+                    <p id="qrcodeStatus" class="qrcode-status">等待生成二维码...</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>凭证状态</h2>
+                <button id="checkStatusBtn" class="action-btn">
+                    <i class="fas fa-check-circle"></i> 检查凭证状态
+                </button>
+                <div id="statusResult" class="result"></div>
+            </div>
+
+            <div class="section">
+                <h2>刷新凭证</h2>
+                <button id="refreshBtn" class="action-btn">
+                    <i class="fas fa-sync-alt"></i> 刷新凭证
+                </button>
+                <div id="refreshResult" class="result"></div>
+            </div>
+
+            <div class="section">
+                <h2>凭证信息</h2>
+                <button id="infoBtn" class="action-btn">
+                    <i class="fas fa-info-circle"></i> 查看凭证信息
+                </button>
+                <div id="infoResult" class="result"></div>
+            </div>
+
+            <!-- 添加清空音乐文件夹的选项 -->
+            <div class="section">
+                <h2>音乐文件夹管理</h2>
+                <button id="clearMusicBtn" class="action-btn clear-btn">
+                    <i class="fas fa-trash-alt"></i> 清空音乐文件夹
+                </button>
+                <div id="clearMusicResult" class="result"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>QQ音乐凭证管理系统 &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+
+</html>

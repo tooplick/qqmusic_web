@@ -110,7 +110,7 @@ fi
 echo "检查并迁移凭证文件..."
 if [ ! -f "/root/qqmusic_web/credential/qqmusic_cred.pkl" ]; then
     echo "正在从Git迁移凭证文件..."
-    cp $PROJECT_DIR/credential/qqmusic_cred.pkl /root/qqmusic_web/credential/qqmusic_cred.pkl
+    cp $PROJECT_DIR/qqmusic_cred.pkl /root/qqmusic_web/credential/qqmusic_cred.pkl
     echo "凭证文件已迁移到 /root/qqmusic_web/credential/qqmusic_cred.pkl"
 else
     echo "本地已有凭证文件，跳过迁移"
